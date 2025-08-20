@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Daftar Absensi</title>
+</head>
+<body>
+    <h2>Daftar Absensi</h2>
+    <table border="1">
+        <tr>
+            <th>Tanggal</th>
+            <th>Foto</th>
+            <th>Status</th>
+            <th>Keterangan</th>
+        </tr>
+        {% for a in absensi %}
+        <tr>
+            <td>{{ a.tanggal }}</td>
+            <td><img src="{{ a.foto.url }}" width="100"></td>
+            <td>{{ a.get_status_display }}</td>
+            <td>{{ a.keterangan }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{% url 'absensi_create' %}">Tambah Absensi</a>
+</body>
+</html>
