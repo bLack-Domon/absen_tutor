@@ -26,7 +26,7 @@ urlpatterns = [
 
     # auth bawaan Django
     path("accounts/login/", auth_views.LoginView.as_view(), name="login"),
-    path("accounts/logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
+    path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
 ]
 
 # Tambahkan ini supaya gambar/logo bisa tampil saat DEBUG=True
