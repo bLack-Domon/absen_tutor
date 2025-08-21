@@ -2,6 +2,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import AbsensiForm
 from .models import Absensi
+from django.utils import timezone
+
+def LoginView(request):  
+    return render(request, "registration/login.html",
+        {'now': timezone.now()}
+    )
 
 @login_required
 def absensi_create(request):

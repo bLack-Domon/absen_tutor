@@ -12,5 +12,9 @@
         <button type="submit">Simpan</button>
     </form>
     <a href="{% url 'absensi_list' %}">Lihat Absensi</a>
+    <form action="{% url 'logout' %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
 </body>
 </html>
