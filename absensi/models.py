@@ -20,3 +20,6 @@ class Absensi(models.Model):
 
     def __str__(self):
         return f"{self.tutor.username} - {self.tanggal}"
+
+    class Meta:
+        verbose_name_plural = "Data Absensi"

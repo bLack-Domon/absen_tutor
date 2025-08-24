@@ -34,15 +34,17 @@
     />
   </head>
   <body class="bg-light">
-    <div class="container py-5">
+    <div class="container-fluid p-3">
       <div class="card shadow-lg border-0">
-        <div
-          class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
-        >
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
           <h4 class="mb-0">Daftar Absensi</h4>
-          <a href="{% url 'absensi_create' %}" class="btn btn-light btn-sm"
-            >+ Tambah Absensi</a
-          >
+          <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'absensi_create' %}" class="btn btn-primary btn-sm">+ Tambah Absensi</a>
+            <form method="post" action="{% url 'logout' %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-warning btn-sm">Logout</button>
+            </form>
+          </div>
         </div>
 
         <div class="card-body">
@@ -59,7 +61,7 @@
 
           <div class="table-responsive">
             <table class="table table-striped table-hover align-middle">
-              <thead class="table-primary">
+              <thead class="text-center">
                 <tr>
                   <th scope="col">Tanggal</th>
                   <th scope="col">Foto</th>
@@ -69,7 +71,7 @@
               </thead>
               <tbody>
                 {% for a in absensi %}
-                <tr>
+                <tr class="text-center">
                   <td>{{ a.tanggal|date:"d F Y" }}</td>
                   <td>
                     <img
