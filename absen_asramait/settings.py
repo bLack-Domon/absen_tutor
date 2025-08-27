@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-lrb2r*7ob%8o@%&9aj(l65j3kxt*0$emf%5*8vm7p@!&vj%r^a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.100.6', '127.0.0.1', '192.168.2.105', '172.20.30.188']
+ALLOWED_HOSTS = ['192.168.100.6', '127.0.0.1', '192.168.2.106', '172.20.30.188']
 
 
 # Application definition
@@ -127,8 +127,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/absensi/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -143,3 +141,7 @@ STATICFILES_DIRS = [
 # Untuk file upload (jika ada)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "absensi_home"   # fallback kalau tidak ada group
+LOGOUT_REDIRECT_URL = "login"
