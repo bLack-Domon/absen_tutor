@@ -1,13 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.urls import reverse_lazy
-from datetime import date
-
+from datetime import date, timedelta
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
 from .forms import AbsensiForm
 from .models import Absensi
 
@@ -21,7 +23,7 @@ class CustomLoginView(DjangoLoginView):
         if user.groups.filter(name="admin").exists():
             return reverse_lazy("admin_dashboard")
         elif user.groups.filter(name="birpen").exists():
-            return reverse_lazy("birpen_dashboard")
+            return reverse_lazy("admin_dashboard")
         elif user.groups.filter(name="tutor").exists():
             return reverse_lazy("absensi_home")
         else:
@@ -59,6 +61,26 @@ def absensi_home(request):
                 return redirect("absensi_home")
 
             absensi.tanggal = today
+
+            # --- Compress foto jika ada ---
+            if absensi.foto:  # pastikan field di model Absensi bernama 'foto'
+                img = Image.open(absensi.foto)
+                img_io = BytesIO()
+
+                # resize max width 800px (misal)
+                max_size = (800, 800)
+                img.thumbnail(max_size)
+
+                # simpan ulang dengan kualitas lebih kecil
+                img.save(img_io, format="JPEG", quality=70)
+
+                # ganti file aslinya dengan versi compress
+                absensi.foto.save(
+                    absensi.foto.name,
+                    ContentFile(img_io.getvalue()),
+                    save=False
+                )
+
             absensi.save()
             messages.success(request, "Absensi berhasil ditambahkan.")
             return redirect("absensi_home")
@@ -106,12 +128,63 @@ def is_birpen(user):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(lambda u: is_admin(u) or is_birpen(u))
 def admin_dashboard(request):
-    return render(request, "dashboard/admin.html")
+    users = User.objects.filter(is_staff=False)  # anggap tutor adalah user biasa
+
+    # ambil bulan & tahun saat ini
+    today = date.today()
+    bulan = today.month
+    tahun = today.year
+
+    tutors = []
+    for u in users:
+        absensi_qs = Absensi.objects.filter(
+            tutor=u,
+            tanggal__month=bulan,
+            tanggal__year=tahun
+        )
+
+        hadir_count = absensi_qs.filter(status="hadir").count()
+        alfa_count = absensi_qs.filter(status="alpha").count()
+        izin_count = absensi_qs.filter(status="izin").count()
+
+        bisaroh = hadir_count * 35000
+
+        tutors.append({
+            "user_id": u.id,
+            "nama_lengkap": u.get_full_name() or u.username,
+            "hadir": hadir_count,
+            "alfa": alfa_count,
+            "izin": izin_count,
+            "bisaroh": bisaroh,
+        })
+
+    return render(request, "dashboard/admin.html", {"tutors": tutors})
 
 
 @login_required
-@user_passes_test(is_birpen)
-def birpen_dashboard(request):
-    return render(request, "dashboard/birpen.html")
+@user_passes_test(lambda u: is_admin(u) or is_birpen(u))
+def admin_tutor_absensi(request, tutor_id):
+    tutor = get_object_or_404(User, id=tutor_id, is_staff=False)
+
+    # ambil bulan & tahun saat ini
+    today = date.today()
+    bulan = today.month
+    tahun = today.year
+
+    absensi_qs = Absensi.objects.filter(
+        tutor=tutor,
+        tanggal__month=bulan,
+        tanggal__year=tahun
+    ).order_by('-tanggal')
+
+    paginator = Paginator(absensi_qs, 25)
+    page_number = request.GET.get("page")
+    absensi = paginator.get_page(page_number)
+
+    context = {
+        "tutor": tutor,
+        "absensi": absensi,
+    }
+    return render(request, "dashboard/birpen.html", context)
